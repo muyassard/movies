@@ -1,107 +1,128 @@
-import React from 'react';
+import { Component } from 'react';
+import { AxiosError } from 'axios';
+import { Tab } from 'rc-tabs/lib/interface';
+import { Button, Input, Spin, Table, Tabs, Tag, message } from 'antd';
 
-import { Input, Table } from 'antd';
-import { IEntity } from '../../modules/movies/types';
-
-import { useState } from 'react';
+import { IEntity } from 'modules/movies/types';
 import { Api, Mappers } from 'modules/movies';
 
-const Main: React.FC = () => {
-  const [count, setCount] = useState(0);
-  const [dataMovie, setdataMovie] = useState<IEntity.Movie[]>([]);
-  const dataSource = [
-    {
-      key: '1',
-      name: 'All genres'
-    },
-    {
-      key: '2',
-      name: 'Action'
-    },
-    {
-      key: '3',
-      name: 'Comedy'
-    },
-    {
-      key: '4',
-      name: 'Romance'
-    },
-    {
-      key: '5',
-      name: 'Thriller'
-    }
-  ];
+interface MainState {
+  isLoading: boolean;
+  genres: IEntity.Genre[];
+  movies: IEntity.Movie[];
+  genreId: string;
+  pageSize: number;
+  search: string;
+}
 
-  const columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name'
+export default class Main extends Component<{}, MainState> {
+  state: MainState = {
+    isLoading: true,
+    genres: [],
+    movies: [],
+    genreId: 'all',
+    pageSize: 3,
+    search: ''
+  };
+
+  async componentDidMount() {
+    try {
+      const genreResponse = await Api.Genre.List();
+      
+      const genres = (genreResponse.data || []).map(Mappers.Genre);
+      
+      genres.unshift({ id: 'all', name: 'All Genres' });
+      
+      const movieResponse = await Api.Movie.List();
+      const movies = (movieResponse.data || []).map(Mappers.Movie);
+      
+      this.setState({ genres, movies, isLoading: false });
+    } catch (err:any) {
+      if (err instanceof AxiosError) {
+        message.error(err.response?.data);
+      }
     }
-  ];
-  async function fetchMovies() {
-    const mal = await Api.Movie.List();
-    const res: IEntity.Movie[] = mal.data;
-    res[0].like = '🎈';
-    setCount(res.length);
-    setdataMovie(res);
-    console.log('Movies =', res);
   }
-  // fetchMovies();
 
-  const columnsMovie = [
-    {
-      title: 'Title',
-      dataIndex: 'title',
-      key: 'title',
-      sorter: (record1: any, record2: any) => {
-        return record1.numberInStock - record2.numberInStock;
-      }
-    },
-    {
-      title: 'Username',
-      dataIndex: 'username',
-      key: 'username',
-      sorter: (record1: any, record2: any) => {
-        return record1.numberInStock - record2.numberInStock;
-      }
-    },
-    {
-      title: 'Stock',
-      dataIndex: 'numberInStock',
-      key: 'numberInStock',
-      sorter: (record1: any, record2: any) => {
-        return record1.numberInStock - record2.numberInStock;
-      }
-    },
-    {
-      title: 'Rate',
-      dataIndex: 'dailyRentalRate',
-      key: 'rate',
-      sorter: (record1: any, record2: any) => {
-        return record1.numberInStock - record2.numberInStock;
-      }
-    },
-    {
-      title: 'Like',
-      dataIndex: 'like',
-      key: 'like'
-    }
-  ];
-  
-  return (
-    <div className="flex gap-10 px-48 py-10">
-      <div className="w-[150px]">
-        <Table className=" " dataSource={dataSource} columns={columns} pagination={false} />
+  render() {
+    const { genres, movies, genreId, isLoading, pageSize, search } = this.state;
+
+    if (isLoading) return <Spin />;
+
+    const filteredMovies = genreId === 'all' ? movies : movies.filter(m => m.genre.id === genreId);
+    const searchedMovies = filteredMovies.filter(
+      m =>
+        m.title.toLowerCase().includes(search.toLowerCase()) ||
+        m.genre.name.toLowerCase().includes(search.toLowerCase()) ||
+        m.owner.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return (
+      <div className="container relative mx-auto pt-2">
+        <Tabs
+          animated
+          activeKey={genreId}
+          onChange={key => this.setState({ genreId: key, search: '' })}
+          size="large"
+          items={genres.map<Tab>(item => ({
+            key: item.id,
+            label: item.name,
+            children: (
+              <Table
+                rowKey="id"
+                loading={isLoading}
+                dataSource={searchedMovies}
+                bordered
+                columns={[
+                  {
+                    title: 'Title',
+                    dataIndex: 'title',
+                    sorter: (a, b) => a.title.localeCompare(b.title)
+                  },
+                  {
+                    title: 'Genre',
+                    dataIndex: 'genre',
+                    render: (genre: IEntity.Genre) => <Tag color="gold">{genre?.name}</Tag>
+                  },
+                  {
+                    title: 'Owner',
+                    dataIndex: 'owner'
+                  },
+                  {
+                    title: 'Stock',
+                    dataIndex: 'stock',
+                    sorter: (a, b) => a.stock - b.stock
+                  },
+                  {
+                    title: 'Rate',
+                    dataIndex: 'rate',
+                    sorter: (a, b) => a.rate - b.rate
+                  },
+                  {
+                    title: 'Actions',
+                    width: 100,
+                    render: () => (
+                      <div className="flex gap-2">
+                        <Button type="primary" danger>
+                          Delete
+                        </Button>
+                      </div>
+                    )
+                  }
+                ]}
+                pagination={pageSize < filteredMovies.length && { pageSize }}
+              />
+            )
+          }))}
+        />
+        <Input.Search
+          value={search}  
+          onChange={e => this.setState({ search: e.target.value })}
+          allowClear
+          placeholder="Search"
+          className="absolute right-0 top-5 w-[400px]"
+        />
       </div>
-
-      <div className=" flex w-[650px] flex-col gap-5">
-        <div className="">Showing {count} movies in the database.</div>
-        <Input className="w-[500px]" type="search " placeholder="Search" size="large" />
-        <Table className=" " dataSource={dataMovie} columns={columnsMovie} />
-      </div>
-    </div>
-  );
-};
-
-export default Main;
+    );
+  }
+}

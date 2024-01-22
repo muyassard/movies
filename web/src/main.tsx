@@ -2,10 +2,9 @@ import React from 'react';
 import { Navbar } from 'components';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Login, Register } from 'pages/auth';
-import Movies from 'pages/movies/main';
 
 const Main = () => (
-  <div className="flex h-full w-full flex-col gap-4 ">
+  <div className="flex flex-col justify-center gap-4">
     <Navbar />
     <Routes>
       <Route path="auth">
@@ -13,8 +12,6 @@ const Main = () => (
         <Route path="register" element={<Register />} />
         <Route path="*" element={<Navigate to="/auth/login" />} />
       </Route>
-      <Route path="movies" element={<Movies />} />
-      <Route index path="*" element={<Movies />} />
     </Routes>
   </div>
 );

@@ -6,7 +6,7 @@ import { Navigate, Route, Routes as Switch } from 'react-router-dom';
 const Routes: React.FC = () => (
   <>
     <Navbar />
-    <Switch>+
+    <Switch>
       <Route path="movies">
         <Route index element={<Movies.Main />} />
         <Route path="new" element={<Movies.New />} />

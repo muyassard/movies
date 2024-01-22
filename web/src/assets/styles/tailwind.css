@@ -1,13 +1,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-}
-
-/* .ant-table-row:hover{
-  background-color: #1677ff;
-} */
 * {
   font-family:
     Aeonik system-ui,
@@ -21,6 +14,10 @@ body {
     'Open Sans',
     'Helvetica Neue',
     sans-serif;
+}
+
+body {
+  margin: 0;
 }
 
 @font-face {

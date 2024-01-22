@@ -8,14 +8,14 @@ export default class Login extends Component {
 
     const email = document.querySelector<HTMLInputElement>('#email')?.value!;
     const password = document.querySelector<HTMLInputElement>('#password')?.value!;
-
-    try {
+    
+    try { 
       const loginRes = await Api.Login({ email, password });
       const token = loginRes.data.data;
-
+      
       const meRes = await Api.Me({ token });
       const user = Mappers.User(meRes.data);
-
+        
       message.success(`Successfully Logged in. Hi ${user.name} 🎉`);
     } catch (err) {
       console.log(err);

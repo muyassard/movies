@@ -3,7 +3,7 @@ import { IApi } from './types';
 
 export const Movie = {
   List: () =>  http.get<IApi.Movie.List.Response>('/movies'),
-
+ 
   Single: ({ movieId }: IApi.Movie.Single.Request) => http.get<IApi.Movie.Single.Response>(`/movies/${movieId}`),
 
   Add: ({ title, genreId, stock: numberInStock, rate: dailyRentalRate, token }: IApi.Movie.Add.Request) =>

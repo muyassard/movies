@@ -7,7 +7,7 @@ export namespace IEntity {
   export interface Movie {
     id: string;
     title: string;
-    username: string;
+    owner: string;
     genre: IEntity.Genre;
     stock: number;
     rate: number;
