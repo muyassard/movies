@@ -5,6 +5,7 @@ import { Button, Input, Spin, Table, Tabs, Tag, message } from 'antd';
 
 import { IEntity } from 'modules/movies/types';
 import { Api, Mappers } from 'modules/movies';
+import { Link } from 'react-router-dom';
 
 interface MainState {
   isLoading: boolean;
@@ -28,16 +29,15 @@ export default class Main extends Component<{}, MainState> {
   async componentDidMount() {
     try {
       const genreResponse = await Api.Genre.List();
-      
       const genres = (genreResponse.data || []).map(Mappers.Genre);
-      
+
       genres.unshift({ id: 'all', name: 'All Genres' });
-      
+
       const movieResponse = await Api.Movie.List();
       const movies = (movieResponse.data || []).map(Mappers.Movie);
-      
+
       this.setState({ genres, movies, isLoading: false });
-    } catch (err:any) {
+    } catch (err) {
       if (err instanceof AxiosError) {
         message.error(err.response?.data);
       }
@@ -77,6 +77,7 @@ export default class Main extends Component<{}, MainState> {
                   {
                     title: 'Title',
                     dataIndex: 'title',
+                    render: (title, movie) => <Link to={movie.id}>{title}</Link>,
                     sorter: (a, b) => a.title.localeCompare(b.title)
                   },
                   {
@@ -115,8 +116,8 @@ export default class Main extends Component<{}, MainState> {
             )
           }))}
         />
-        <Input.Search
-          value={search}  
+        <Input
+          value={search}
           onChange={e => this.setState({ search: e.target.value })}
           allowClear
           placeholder="Search"

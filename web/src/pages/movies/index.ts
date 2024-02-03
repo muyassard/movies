@@ -1,3 +1,3 @@
 export { default as Main } from './main';
 export { default as Update } from './update';
-export { default as New } from './new';
+export { default as Single } from './single';
